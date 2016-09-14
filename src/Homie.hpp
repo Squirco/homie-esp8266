@@ -76,7 +76,7 @@ class HomieClass {
   HomieClass& setStandalone();
 
   SendingPromise& setNodeProperty(const HomieNode& node, const String& property) {
-    return _sendingPromise.setNode(node).setProperty(property).setQos(1).setRetained(true);
+    return _sendingPromise.setNode(node).setProperty(property).setQos(1).setRetained(true).setRange({ .isRange = false, .index = 0 });
   }
 
   void setIdle(bool idle);
@@ -85,6 +85,7 @@ class HomieClass {
   bool isConnected() const;
   const ConfigStruct& getConfiguration() const;
   AsyncMqttClient& getMqttClient();
+  void prepareForSleep();
 
  private:
   bool _setupCalled;
