@@ -37,11 +37,13 @@ struct Interface {
   } reset;
 
   GlobalInputHandler globalInputHandler;
+  BroadcastHandler broadcastHandler;
   OperationFunction setupFunction;
   OperationFunction loopFunction;
   EventHandler eventHandler;
 
   /***** Runtime data *****/
+  HomieEvent event;
   bool connected;
   Logger* logger;
   Blinker* blinker;

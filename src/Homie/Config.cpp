@@ -50,6 +50,7 @@ bool Config::load() {
   char buf[MAX_JSON_CONFIG_FILE_SIZE];
   configFile.readBytes(buf, configSize);
   configFile.close();
+  buf[configSize] = '\0';
 
   StaticJsonBuffer<MAX_JSON_CONFIG_ARDUINOJSON_BUFFER_SIZE> jsonBuffer;
   JsonObject& parsedJson = jsonBuffer.parseObject(buf);
@@ -162,6 +163,7 @@ char* Config::getSafeConfigFile() const {
   char buf[MAX_JSON_CONFIG_FILE_SIZE];
   configFile.readBytes(buf, configSize);
   configFile.close();
+  buf[configSize] = '\0';
 
   StaticJsonBuffer<MAX_JSON_CONFIG_ARDUINOJSON_BUFFER_SIZE> jsonBuffer;
   JsonObject& parsedJson = jsonBuffer.parseObject(buf);
@@ -202,7 +204,7 @@ bool Config::canBypassStandalone() {
   return SPIFFS.exists(CONFIG_BYPASS_STANDALONE_FILE_PATH);
 }
 
-void Config::write(const char* config) {
+void Config::write(const JsonObject& config) {
   if (!_spiffsBegin()) { return; }
 
   SPIFFS.remove(CONFIG_FILE_PATH);
@@ -213,7 +215,7 @@ void Config::write(const char* config) {
     return;
   }
 
-  configFile.print(config);
+  config.printTo(configFile);
   configFile.close();
 }
 
@@ -239,6 +241,7 @@ bool Config::patch(const char* patch) {
     char configJson[MAX_JSON_CONFIG_FILE_SIZE];
     configFile.readBytes(configJson, configSize);
     configFile.close();
+    configJson[configSize] = '\0';
 
     StaticJsonBuffer<MAX_JSON_CONFIG_ARDUINOJSON_BUFFER_SIZE> configJsonBuffer;
     JsonObject& configObject = configJsonBuffer.parseObject(configJson);
@@ -269,11 +272,7 @@ bool Config::patch(const char* patch) {
       return false;
     }
 
-    size_t finalBufferLength = configObject.measureLength() + 1;
-    std::unique_ptr<char[]> finalConfigString(new char[finalBufferLength]);
-    configObject.printTo(finalConfigString.get(), finalBufferLength);
-
-    write(finalConfigString.get());
+    write(configObject);
 
     return true;
 }
